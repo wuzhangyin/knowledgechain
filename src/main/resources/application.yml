@@ -1,0 +1,179 @@
+server:
+  port: 29092
+
+spring:
+  application:
+    name: knowledgechain-service
+  
+  profiles:
+    active: mysql  # 默认使用MySQL数据库
+  
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 512MB
+      max-request-size: 512MB
+      file-size-threshold: 2KB
+  
+  # 数据库配置
+  datasource:
+    # 数据库连接配置（使用H2内存数据库进行测试）
+    url: jdbc:h2:mem:knowledgechain;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.knowledgechain.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    call-setters-on-nulls: true
+    jdbc-type-for-null: 'null'
+
+# BGE向量化服务配置
+bge:
+  enabled: true
+  api-url: https://api.siliconflow.cn/v1/embeddings
+  api-key: sk-amdtydlguoemdnyekfopgiqdydoenvciingvqprjwiwdnknz
+  model: BAAI/bge-large-zh-v1.5
+  dimension: 1024
+
+# Milvus向量数据库配置
+milvus:
+  enabled: true
+  host: localhost
+  port: 19530
+  username: root
+  password: Milvus
+  database: default
+  timeout: 30000
+  retry-times: 3
+
+# Spring Boot Actuator配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# 日志配置
+logging:
+  level:
+    com.knowledgechain: DEBUG
+    io.milvus: INFO
+    org.springframework.web: INFO
+    org.hibernate: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/knowledgechain.log
+    max-size: 100MB
+    max-history: 30
+    total-size-cap: 3GB
+  logback:
+    rollingpolicy:
+      file-name-pattern: logs/knowledgechain-%d{yyyy-MM-dd}-%i.log.gz
+      max-file-size: 100MB
+      max-history: 30
+      total-size-cap: 3GB
+
+# MinIO配置
+minio:
+  enabled: true
+  endpoint: http://127.0.0.1:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket-name: knowledgechain
+
+
+# 大模型配置
+llm:
+  # 默认使用的大模型类型
+  default-type: qwen
+  
+  # 通义千问配置
+  qwen:
+    enabled: true
+    api-url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+    api-key: sk-3aa6651293a34d74993821fb9de4c4cf
+    model: qwen-plus
+    timeout: 30000
+    temperature: 0.7
+    max-tokens: 2000
+  
+  # OpenAI配置
+  openai:
+    enabled: false
+    api-url: https://api.openai.com/v1/chat/completions
+    api-key: your-openai-api-key
+    model: gpt-3.5-turbo
+    timeout: 30000
+    temperature: 0.7
+    max-tokens: 2000
+  
+  # DeepSeek配置
+  deepseek:
+    enabled: false
+    api-url: https://api.deepseek.com/v1/chat/completions
+    api-key: your-deepseek-api-key
+    model: deepseek-chat
+    timeout: 30000
+    temperature: 0.7
+    max-tokens: 2000
+
+---
+# MySQL数据库配置（生产环境）
+spring:
+  config:
+    activate:
+      on-profile: mysql
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/knowledgechain?allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: Wuzhy1982
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+# OCR配置
+ocr:
+  provider: paddle  # 可选: paddle, tesseract, baidu
+  languages: 
+    - chinese
+    - english
+  enabled: true
+
+# 图片处理配置
+image:
+  processing:
+    enabled: true
+  vectorization:
+    enabled: true
